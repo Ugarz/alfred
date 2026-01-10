@@ -10,6 +10,8 @@ import {
 } from 'discord.js'
 import { type CustomClient } from '../utils/types/client'
 
+type UpdateGuildEventOptions = GuildScheduledEventEditOptions<GuildScheduledEventStatus, GuildScheduledEventStatus.Active | GuildScheduledEventStatus.Completed | GuildScheduledEventStatus.Canceled>
+
 export class QEventManager {
 	private readonly client: CustomClient
 	private readonly guildId: string | undefined
@@ -56,7 +58,7 @@ export class QEventManager {
 		}
 	}
 
-	async updateGuildEvent(eventId: string, options: GuildScheduledEventEditOptions) {
+	async updateGuildEvent(eventId: string, options: UpdateGuildEventOptions) {
 		if (this.guildId === undefined) throw new Error(`GuildId not found with ID: ${this.guildId}`)
 
 		try {

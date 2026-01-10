@@ -3,9 +3,10 @@ import {
 	GuildScheduledEventPrivacyLevel,
 	MessageFlags,
 	SlashCommandBuilder,
+	SlashCommandSubcommandsOnlyBuilder,
 	type CommandInteraction,
 	GuildScheduledEventRecurrenceRuleFrequency,
-	GuildScheduledEventRecurrenceRuleMonth
+	GuildScheduledEventRecurrenceRuleMonth,
 } from 'discord.js'
 import { deleteBirthdayEvent, deleteUserBirthday, getBirthdayEventByUserId, storeBirthday, storeBirthdayEvent, updateBirthdayEvent } from '../../db'
 import { QEventManager } from '../../events/eventsManager'
@@ -14,7 +15,7 @@ import { getNextBirthday, validateAndParseDate } from '../../utils/date'
 export default {
 	name: 'bday',
 	description: 'Manage birthdays',
-	async data(): Promise<SlashCommandBuilder> {
+	async data(): Promise<SlashCommandSubcommandsOnlyBuilder> {
 		return new SlashCommandBuilder()
 			.setName('bday')
 			.setDescription('Manage birthdays')
@@ -83,7 +84,7 @@ export default {
 						description: eventDescription,
 						scheduledStartTime: nextBirthday,
 					})
-					await updateBirthdayEvent(existingEvent.id, eventName, eventDescription, GuildScheduledEventRecurrenceRuleFrequency.Yearly);
+					await updateBirthdayEvent(existingEvent.id, eventName, eventDescription);
 					await interaction.reply({
 						content: `🎂 J'ai mis à jour l'anniversaire de ${targetUser.username} pour le **${dateInput}** !`,
 						flags: MessageFlags.Ephemeral
@@ -100,6 +101,8 @@ export default {
 							frequency: GuildScheduledEventRecurrenceRuleFrequency.Yearly,
 							interval: 1,
 							startAt: nextBirthday,
+							byMonth: [nextBirthday.getMonth() + 1 as GuildScheduledEventRecurrenceRuleMonth],
+							byMonthDay: [nextBirthday.getDate()],
 						}
 					})
 
