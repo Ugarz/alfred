@@ -1,0 +1,150 @@
+import {
+	GuildScheduledEventEntityType,
+	GuildScheduledEventPrivacyLevel,
+	MessageFlags,
+	SlashCommandBuilder,
+	type CommandInteraction,
+	GuildScheduledEventRecurrenceRuleFrequency,
+	GuildScheduledEventRecurrenceRuleMonth
+} from 'discord.js'
+import { deleteBirthdayEvent, deleteUserBirthday, getBirthdayEventByUserId, storeBirthday, storeBirthdayEvent, updateBirthdayEvent } from '../../db'
+import { QEventManager } from '../../events/eventsManager'
+import { getNextBirthday, validateAndParseDate } from '../../utils/date'
+
+export default {
+	name: 'bday',
+	description: 'Manage birthdays',
+	async data(): Promise<SlashCommandBuilder> {
+		return new SlashCommandBuilder()
+			.setName('bday')
+			.setDescription('Manage birthdays')
+			.addSubcommand(subcommand =>
+				subcommand
+					.setName('add')
+					.setDescription('Add or update a birthday')
+					.addStringOption(option =>
+						option
+							.setName('date')
+							.setDescription('Birthday date (format: DD/MM or DD/MM/YYYY)')
+							.setRequired(true)
+					)
+					.addUserOption(option =>
+						option
+							.setName('user')
+							.setDescription('User (leave empty for yourself)')
+							.setRequired(false)
+					)
+			)
+			.addSubcommand(subcommand =>
+				subcommand
+					.setName('delete')
+					.setDescription('Delete a birthday')
+					.addUserOption(option =>
+						option
+							.setName('user')
+							.setDescription('User whose birthday to delete')
+							.setRequired(true)
+					)
+			)
+	},
+	async execute(interaction: CommandInteraction): Promise<void> {
+		if (!interaction.isChatInputCommand()) return
+
+		const eventManager = new QEventManager(interaction.client)
+
+		if (interaction.options.getSubcommand() === 'add') {
+			const dateInput = interaction.options.getString('date', true)
+			const targetUser = interaction.options.getUser('user') || interaction.user
+
+			const { date, error } = validateAndParseDate(dateInput)
+
+			if (error || !date) {
+				await interaction.reply({
+					content: error || '❌ Une erreur inattendue est survenue.',
+					flags: MessageFlags.Ephemeral
+				})
+				return
+			}
+
+			const { day, month, year } = date
+
+			try {
+				await storeBirthday(targetUser.id, targetUser.username, day, month, year)
+
+				const existingEvent = await getBirthdayEventByUserId(targetUser.id);
+
+				const nextBirthday = getNextBirthday(day, month)
+				const eventName = `Anniversaire de ${targetUser.username} 🎂`;
+				const eventDescription = `C'est l'anniversaire de ${targetUser.username} aujourd'hui ! 🎉`;
+
+				if (existingEvent) {
+					await eventManager.updateGuildEvent(existingEvent.id, {
+						name: eventName,
+						description: eventDescription,
+						scheduledStartTime: nextBirthday,
+					})
+					await updateBirthdayEvent(existingEvent.id, eventName, eventDescription, GuildScheduledEventRecurrenceRuleFrequency.Yearly);
+					await interaction.reply({
+						content: `🎂 J'ai mis à jour l'anniversaire de ${targetUser.username} pour le **${dateInput}** !`,
+						flags: MessageFlags.Ephemeral
+					})
+				} else {
+					const newEvent = await eventManager.createGuildEvent({
+						name: eventName,
+						scheduledStartTime: nextBirthday,
+						privacyLevel: GuildScheduledEventPrivacyLevel.GuildOnly,
+						entityType: GuildScheduledEventEntityType.External,
+						entityMetadata: { location: 'Quelque part sur le serveur !' },
+						description: eventDescription,
+						recurrenceRule: {
+							frequency: GuildScheduledEventRecurrenceRuleFrequency.Yearly,
+							interval: 1,
+							startAt: nextBirthday,
+						}
+					})
+
+					if(newEvent) {
+						await storeBirthdayEvent(newEvent.id, newEvent.name, newEvent.description || '', targetUser.id);
+					}
+
+					const displayName = targetUser.id === interaction.user.id ? 'ton' : `l'anniversaire de ${targetUser.username}`
+					await interaction.reply({
+						content: `🎂 J'ai enregistré ${displayName} anniversaire le **${dateInput}** !`,
+						flags: MessageFlags.Ephemeral
+					})
+				}
+			} catch (error) {
+				console.error('Error saving birthday:', error)
+				await interaction.reply({
+					content: '❌ Une erreur est survenue lors de l\'enregistrement...',
+					flags: MessageFlags.Ephemeral
+				})
+			}
+		} else if (interaction.options.getSubcommand() === 'delete') {
+			const targetUser = interaction.options.getUser('user', true);
+
+			try {
+				const existingEvent = await getBirthdayEventByUserId(targetUser.id);
+
+				if (existingEvent) {
+					await eventManager.deleteGuildEvent(existingEvent.id);
+					await deleteBirthdayEvent(existingEvent.id);
+				}
+
+				await deleteUserBirthday(targetUser.id);
+
+				await interaction.reply({
+					content: `🗑️ L'anniversaire de ${targetUser.username} a été supprimé.`,
+					flags: MessageFlags.Ephemeral
+				});
+
+			} catch (error) {
+				console.error('Error deleting birthday:', error);
+				await interaction.reply({
+					content: '❌ Une erreur est survenue lors de la suppression...',
+					flags: MessageFlags.Ephemeral
+				});
+			}
+		}
+	}
+}
