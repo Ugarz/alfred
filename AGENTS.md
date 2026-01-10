@@ -63,6 +63,10 @@ Environment variables are managed via `.env`. Required variables:
 - **Deploy Commands**: `pnpm deploy` (runs `src/deploy-commands.ts`)
 - **Lint**: `pnpm lint`
 
+## DB Migrations (Drizzle ORM)
+- use `npx drizzle-kit generate` to generate new migrations
+- use `npx drizzle-kit push` to apply migrations to the local database
+
 ## Conventions
 - **Exports**: Use `export default` for command files.
 - **Types**: Use `CustomClient` (extends `Client`) to access custom properties like `commands` and `guildEvents`.
