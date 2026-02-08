@@ -1,4 +1,4 @@
-import { Snowflake } from 'discord.js'
+import { Snowflake } from "discord.js";
 
 export interface EventData {
   name: string;
@@ -6,5 +6,5 @@ export interface EventData {
   participants: string[];
   reminders: Date[];
   channel: Snowflake;
-  status: 'planned' | 'active' | 'completed';
+  status: "planned" | "active" | "completed";
 }

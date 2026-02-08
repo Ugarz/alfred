@@ -40,6 +40,7 @@ The file organization is designed to clearly separate responsibilities:
 ### 4.1. Command Handling
 
 The bot uses Discord's **slash commands**.
+
 - **Definition**: Each command is defined in its own file in `src/commands/`. Commands are grouped by category (e.g., `fun`, `utility`).
 - **Registration**: The `src/deploy-commands.ts` script is responsible for registering commands with the Discord API.
 - **Execution**: The main file (`src/index.ts`) listens for command interactions and executes the corresponding code via a command handler.
@@ -60,15 +61,16 @@ This script is typically run once during setup or whenever you add or modify a c
 ### 4.2. Database Interaction (Drizzle ORM)
 
 Data persistence is managed by Drizzle ORM with an SQLite database.
+
 - **Schema**: The table structure is defined in `src/db/schema.ts`. This is the single source of truth for the data structure.
 - **Connection and Queries**: `src/db/index.ts` initializes the database connection and exports the Drizzle `db` instance. It also exposes specific functions (like `storeBirthday`) to abstract query logic.
 - **Migrations**: The `drizzle/` folder contains SQL migration files. These files are essential and must be versioned. They describe how to evolve the database schema sequentially.
 
-| Drizzle Command           | Description                                    |
-| :------------------------ | :--------------------------------------------- |
-| `npx drizzle-kit generate`| Generates a new SQL migration                  |
-| `npx drizzle-kit push`    | Pushes schema changes to the database (for development) |
-| `npx drizzle-kit studio`  | Launches a web interface to explore the database |
+| Drizzle Command            | Description                                             |
+| :------------------------- | :------------------------------------------------------ |
+| `npx drizzle-kit generate` | Generates a new SQL migration                           |
+| `npx drizzle-kit push`     | Pushes schema changes to the database (for development) |
+| `npx drizzle-kit studio`   | Launches a web interface to explore the database        |
 
 ### 4.3. Scheduled Tasks (Crons)
 
@@ -81,6 +83,7 @@ The bot can react to Discord events other than commands, such as a new member jo
 ## 5. Data Flow: Example with the `/bday set` command
 
 To illustrate how the components interact, here's the journey of a command to set a birthday:
+
 1.  **User**: Types the command `/bday set day:15 month:10` on Discord.
 2.  **Discord API**: Sends an `InteractionCreate` event to the bot.
 3.  **Bot (index.ts)**: Receives the interaction. The command handler identifies it as the `bday` command.
@@ -90,4 +93,5 @@ To illustrate how the components interact, here's the journey of a command to se
 7.  **Response**: The `bday.ts` command sends a confirmation response to the user via an interaction reply.
 
 ## 6. Project Context
+
 - [Agent Context](../AGENTS.md)

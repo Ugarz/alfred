@@ -1,3 +1,3 @@
-type ExtensionFileType = '.ts' | '.js'
+type ExtensionFileType = ".ts" | ".js";
 
-export const EXTENSION: ExtensionFileType = '.ts'
+export const EXTENSION: ExtensionFileType = ".ts";

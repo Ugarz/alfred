@@ -1,7 +1,7 @@
-import { drizzle } from 'drizzle-orm/better-sqlite3';
-import Database from 'better-sqlite3';
-import * as schema from './schema';
-import { and, eq } from 'drizzle-orm';
+import { drizzle } from "drizzle-orm/better-sqlite3";
+import Database from "better-sqlite3";
+import * as schema from "./schema";
+import { and, eq } from "drizzle-orm";
 
 const sqlite = new Database(process.env.DB_FILE_NAME!);
 export const db = drizzle(sqlite, { schema, logger: true });
@@ -46,29 +46,47 @@ export const storeBirthday = async (
 };
 
 export const getBirthdayEventByUserId = async (userId: string) => {
-	return await db.query.events.findFirst({
-	  where: and(eq(schema.events.userId, userId), eq(schema.events.type, 'birthday')),
-	});
+  return await db.query.events.findFirst({
+    where: and(
+      eq(schema.events.userId, userId),
+      eq(schema.events.type, "birthday"),
+    ),
+  });
 };
 
-export const storeBirthdayEvent = async (eventId: string, name: string, description: string, userId: string) => {
-	  return await db.insert(schema.events).values({
-		  id: eventId,
-		  name,
-		  description,
-		  userId,
-		  type: 'birthday',
-	  });
+export const storeBirthdayEvent = async (
+  eventId: string,
+  name: string,
+  description: string,
+  userId: string,
+) => {
+  return await db.insert(schema.events).values({
+    id: eventId,
+    name,
+    description,
+    userId,
+    type: "birthday",
+  });
 };
 
-export const updateBirthdayEvent = async (eventId: string, name: string, description: string) => {
-	  return await db.update(schema.events).set({ name, description }).where(eq(schema.events.id, eventId));
-}
+export const updateBirthdayEvent = async (
+  eventId: string,
+  name: string,
+  description: string,
+) => {
+  return await db
+    .update(schema.events)
+    .set({ name, description })
+    .where(eq(schema.events.id, eventId));
+};
 
 export const deleteBirthdayEvent = async (eventId: string) => {
-	  return await db.delete(schema.events).where(eq(schema.events.id, eventId));
+  return await db.delete(schema.events).where(eq(schema.events.id, eventId));
 };
 
 export const deleteUserBirthday = async (userId: string) => {
-	return await db.update(schema.users).set({ birthdayDay: null, birthdayMonth: null, birthdayYear: null }).where(eq(schema.users.id, userId));
-}
+  return await db
+    .update(schema.users)
+    .set({ birthdayDay: null, birthdayMonth: null, birthdayYear: null })
+    .where(eq(schema.users.id, userId));
+};

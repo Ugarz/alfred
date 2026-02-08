@@ -1,2 +1,2 @@
 // Managers
-export { QEventManager } from '../events/eventsManager'
+export { QEventManager } from "../events/eventsManager";
