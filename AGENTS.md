@@ -7,17 +7,22 @@ It provides utility commands and event management features.
 
 ## Tech Stack
 
-- **Runtime**: Node.js (>=v22.18.0)
+- **Runtime**: Node.js (v24.13.0)
 - **Language**: TypeScript
 - **Framework**: discord.js (v14)
+- **Database**: SQLite (better-sqlite3) with Drizzle ORM
+- **Validation**: Zod
 - **Scheduling**: croner
+- **Task Runner**: mise
 - **Package Manager**: pnpm
 
 ## Directory Structure
 
 - `src/commands`: Slash commands organized by category (e.g., `utility`, `fun`).
 - `src/crons`: Scheduled tasks (cron jobs).
+- `src/db`: Database schema and client instance (`src/db/index.ts`, `src/db/schema.ts`).
 - `src/events`: Event handlers and managers (e.g., `QEventManager`).
+- `src/i18n`: Internationalization locale files.
 - `src/utils`: Shared utilities, types, and constants.
 - `src/index.ts`: Main entry point.
 - `src/deploy-commands.ts`: Script to register slash commands with Discord.
@@ -46,6 +51,17 @@ export default {
 };
 ```
 
+### Database
+
+- **ORM**: Drizzle ORM + `better-sqlite3`
+- **Schema**: Defined in `src/db/schema.ts` (`users` and `events` tables).
+- **Client**: Initiated in `src/db/index.ts`.
+- **Migrations**: `drizzle-kit`.
+
+### Internationalization
+
+- Located in `src/i18n`.
+
 ### Events
 
 - `src/events/eventsManager.ts` handles fetching and caching guild scheduled events.
@@ -65,18 +81,26 @@ Environment variables are managed via `.env`. Required variables:
 - `CLIENT_ID`: Application ID
 - `GUILD_ID`: Server ID (for development/deployment)
 - `ANNOUNCES_CHANNEL`: Channel ID for announcements
+- `PERMISSIONS`: Bot invite permissions integer
+- `DB_FILE_NAME`: SQLite database filename (default: `alfred.db`)
 
 ## Development Workflow
 
-- **Start Dev Server**: `pnpm dev` (uses `tsx watch`)
-- **Build**: `pnpm build` (uses `tsc`)
-- **Deploy Commands**: `pnpm deploy` (runs `src/deploy-commands.ts`)
+- **Start Dev Server**: `mise run dev` (uses `tsx watch` via `node --run`)
+- **Build**: `mise run build` (uses `tsc`)
+- **Deploy Commands**: `mise run deploy` (runs `src/deploy-commands.ts`)
+- **Drizzle Studio**: `mise run studio` (inspect database UI)
 - **Lint**: `pnpm lint`
 
 ## DB Migrations (Drizzle ORM)
 
 - use `npx drizzle-kit generate` to generate new migrations
 - use `npx drizzle-kit push` to apply migrations to the local database
+
+## Code Quality & Complexity
+
+- **Cyclomatic Complexity**: Keep functions small and focused. Avoid deep nesting and complex branching.
+- **Single Responsibility**: Each module or function should have one reason to change. Separate subcommands into their own files.
 
 ## Conventions
 

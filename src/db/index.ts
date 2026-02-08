@@ -1,7 +1,7 @@
 import { drizzle } from "drizzle-orm/better-sqlite3";
 import Database from "better-sqlite3";
 import * as schema from "./schema";
-import { and, eq } from "drizzle-orm";
+import { and, eq, isNotNull } from "drizzle-orm";
 
 const sqlite = new Database(process.env.DB_FILE_NAME!);
 export const db = drizzle(sqlite, { schema, logger: true });
@@ -89,4 +89,13 @@ export const deleteUserBirthday = async (userId: string) => {
     .update(schema.users)
     .set({ birthdayDay: null, birthdayMonth: null, birthdayYear: null })
     .where(eq(schema.users.id, userId));
+};
+
+export const getAllBirthdays = async () => {
+  return await db.query.users.findMany({
+    where: and(
+      isNotNull(schema.users.birthdayDay),
+      isNotNull(schema.users.birthdayMonth),
+    ),
+  });
 };

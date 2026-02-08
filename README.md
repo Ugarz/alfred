@@ -2,13 +2,6 @@
 
 This is a fun Discord Butler Bot 🚀
 
-```bash
-TOKEN=
-PERMISSIONS=
-CLIENT_ID=
-GUILD_ID=
-```
-
 ## Ideas
 
 Côté fun :
