@@ -5,6 +5,11 @@
 This project is a Discord bot built boilerplate.
 It provides utility commands and event management features.
 
+## Documentation
+
+- [Architecture](documentation/architecture.md)
+- [Deployment](documentation/deployment.md)
+
 ## Tech Stack
 
 - **Runtime**: Node.js (v24.13.0)
